@@ -1,4 +1,4 @@
-package com.thrike.pictureextractor.service;
+package com.thrike.fileextractor.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +16,8 @@ public class FileMover {
         this.fileFolderDestination = fileFolderDestination;
     }
 
-    public void move(){
-        try{
+    public void move() {
+        try {
             findFilesInSourceDirectory();
             transferPictures();
         } catch (IOException e) {
@@ -30,23 +30,22 @@ public class FileMover {
         Path destinationFileFolderPath = Paths.get(fileFolderDestination);
         Path temp = Files.move(sourceFileFolderPath, destinationFileFolderPath);
 
-        if(temp != null){
+        if (temp != null) {
             System.out.println("Files moved successfully!");
         } else {
             System.out.println("Error during file transfer");
         }
     }
 
-    private void findFilesInSourceDirectory(){
+    private void findFilesInSourceDirectory() {
         File sourceDirectoryToSearch = new File(fileFolderSource);
         String filesPresent[] = sourceDirectoryToSearch.list();
         int fileCount = filesPresent.length;
         System.out.println(String.format("Found %s files:", fileCount));
         System.out.println("=========================================");
-        for(int i = 0; i < filesPresent.length; i++){
+        for (int i = 0; i < filesPresent.length; i++) {
             System.out.println(filesPresent[i]);
         }
         System.out.println("=========================================");
     }
 }
-

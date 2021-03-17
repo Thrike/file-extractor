@@ -1,11 +1,10 @@
-package com.thrike.pictureextractor.gui;
+package com.thrike.fileextractor.gui;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class GUI extends JFrame {
+public class GUI extends JFrame{
 
-    private JPanel panel1;
     private JPanel mainPanel;
     private JButton testButton;
 

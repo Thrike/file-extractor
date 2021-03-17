@@ -14,7 +14,7 @@
 	<name>file-extractor</name>
 	<description>Simple app that collects and transfers files from one location to another.</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>15</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
