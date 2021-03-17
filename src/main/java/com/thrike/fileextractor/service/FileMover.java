@@ -10,27 +10,30 @@ public class FileMover {
 
     private String fileFolderSource;
     private String fileFolderDestination;
+    private String test;
 
-    public FileMover(String fileFolderSource, String fileFolderDestination) {
+    public FileMover(String fileFolderSource, String fileFolderDestination, String test) {
         this.fileFolderSource = fileFolderSource;
         this.fileFolderDestination = fileFolderDestination;
+        this.test = test;
     }
 
     public void move() {
         try {
             findFilesInSourceDirectory();
-            transferPictures();
+            transferFiles();
         } catch (IOException e) {
             System.out.println(e);
         }
     }
 
-    private void transferPictures() throws IOException {
+    private void transferFiles() throws IOException {
         Path sourceFileFolderPath = Paths.get(fileFolderSource);
         Path destinationFileFolderPath = Paths.get(fileFolderDestination);
-        Path temp = Files.move(sourceFileFolderPath, destinationFileFolderPath);
+        System.out.println("Transferring files from: " + sourceFileFolderPath.toString() + " to " +  destinationFileFolderPath.toString());
 
-        if (temp != null) {
+        Path transferFiles = Files.move(sourceFileFolderPath, destinationFileFolderPath);
+        if (transferFiles != null) {
             System.out.println("Files moved successfully!");
         } else {
             System.out.println("Error during file transfer");
@@ -38,10 +41,9 @@ public class FileMover {
     }
 
     private void findFilesInSourceDirectory() {
-        File sourceDirectoryToSearch = new File(fileFolderSource);
+        File sourceDirectoryToSearch = new File(test);
         String filesPresent[] = sourceDirectoryToSearch.list();
-        int fileCount = filesPresent.length;
-        System.out.println(String.format("Found %s files:", fileCount));
+        System.out.println(String.format("Found %s files:", filesPresent.length));
         System.out.println("=========================================");
         for (int i = 0; i < filesPresent.length; i++) {
             System.out.println(filesPresent[i]);
