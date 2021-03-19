@@ -9,12 +9,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class FileMover {
 
     private String fileFolderSource;
     private String fileFolderDestination;
-//    private Scanner userInput = new Scanner(System.in);
+    private Scanner userInput = new Scanner(System.in);
 
     public FileMover(String fileFolderSource, String fileFolderDestination) {
         this.fileFolderSource = fileFolderSource;
@@ -24,7 +25,8 @@ public class FileMover {
     public void start() {
         try {
             List<String> listOfFilesToTransfer = findFilesInSourceDirectory();
-            if(filesAreAvailableForTransfer(listOfFilesToTransfer)){
+            boolean userConfirmedFileTransfer = confirmFileTransfer();
+            if(filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer){
                 transferFiles(listOfFilesToTransfer);
                 System.out.println("Files transferred successfully");
             }
@@ -68,5 +70,22 @@ public class FileMover {
             filesToTransfer = true;
         }
         return filesToTransfer;
+    }
+
+    private boolean confirmFileTransfer(){
+        boolean userConfirmedFileTransfer = false;
+        System.out.println(String.format("\nTransfer all above files with the following configuration? (Y/N) \n" +
+                "Source: " + "[" + fileFolderSource  + "]" + " -->  " + "Destination: " + "[" + fileFolderDestination + "]"));
+        String userConfirmationChoice = userInput.nextLine();
+        if(userConfirmationChoice.equalsIgnoreCase("Y")){
+            userConfirmedFileTransfer = true;
+        } else if(userConfirmationChoice.equalsIgnoreCase("N")){
+            userConfirmedFileTransfer = false;
+            System.out.println("Aborting file transfer...");
+        } else {
+            System.out.println("\nPlease enter 'Y' or 'N'");
+            start();
+        }
+        return userConfirmedFileTransfer;
     }
 }
