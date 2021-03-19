@@ -1,5 +1,6 @@
 package com.thrike.fileextractor.service;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,9 +56,7 @@ public class FileMover {
             System.out.println(String.format("No files found in directory: %s, shutting down... \n", fileFolderSource));
         } else {
             System.out.println(String.format("Found %s files in %s:", filesPresent.size(), fileFolderSource));
-            System.out.println("=========================================");
-            filesPresent.forEach((file) -> System.out.println(file));
-            System.out.println("=========================================");
+            displayFilesFoundInDirectory(filesPresent);
         }
         return filesPresent;
     }
@@ -75,7 +74,7 @@ public class FileMover {
     private boolean confirmFileTransfer(){
         boolean userConfirmedFileTransfer = false;
         System.out.println(String.format("\nTransfer all above files with the following configuration? (Y/N) \n" +
-                "Source: " + "[" + fileFolderSource  + "]" + " -->  " + "Destination: " + "[" + fileFolderDestination + "]"));
+                "Source: " + "[" + fileFolderSource  + "]" + " -->  " + "Destination: " + "[" + fileFolderDestination + "]\n"));
         String userConfirmationChoice = userInput.nextLine();
         if(userConfirmationChoice.equalsIgnoreCase("Y")){
             userConfirmedFileTransfer = true;
@@ -87,5 +86,27 @@ public class FileMover {
             start();
         }
         return userConfirmedFileTransfer;
+    }
+
+    private void displayFilesFoundInDirectory(List<String> filesPresent){
+        System.out.println("View files (Y/N)?");
+        String userDisplayFilesChoice = userInput.nextLine();
+        if(userDisplayFilesChoice.equalsIgnoreCase("Y")){
+            System.out.println("=========================================");
+            filesPresent.forEach((file) -> System.out.println(file));
+            System.out.println("=========================================");
+        } else {
+            System.out.println("Continuing with file transfer...");
+        }
+    }
+
+    public void testFileChoose(){
+        File fileMoverCurrentDirectory = new File(System.getProperty("user.dir"));
+        JFileChooser currentDirectoryChooser = new JFileChooser();
+        currentDirectoryChooser.setCurrentDirectory(fileMoverCurrentDirectory);
+        currentDirectoryChooser.setDialogTitle("Please select a source directory");
+        currentDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        currentDirectoryChooser.showSaveDialog(null);
+        File directoryChosen = currentDirectoryChooser.getSelectedFile();
     }
 }

@@ -7,14 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FileExtractorApplication {
 
 	public static void main(String[] args) {
-//		SpringApplication.run(FileExtractorApplication.class, args);
-//		System.setProperty("java.awt.headless", "false");
-//		GUI gui = new GUI("Picture Extractor");
 		String sourceFolder = "E:\\Programming\\Java\\Projects\\picext_source\\";
 		String destinationFolder = "E:\\Programming\\Java\\Projects\\picext_destination\\";
 		FileMover fileMover = new FileMover(sourceFolder, destinationFolder);
-//		FileMover fileMover = new FileMover();
-		fileMover.start();
+//		fileMover.start();
+		fileMover.testFileChoose();
 	}
 
 }
