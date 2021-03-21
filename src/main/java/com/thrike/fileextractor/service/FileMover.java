@@ -18,16 +18,16 @@ public class FileMover {
     private String fileFolderDestination;
     private Scanner userInput = new Scanner(System.in);
 
-    public FileMover(String fileFolderSource, String fileFolderDestination) {
-        this.fileFolderSource = fileFolderSource;
-        this.fileFolderDestination = fileFolderDestination;
+    public FileMover() {
     }
 
     public void start() {
         try {
-            List<String> listOfFilesToTransfer = findFilesInSourceDirectory();
+            fileFolderSource = setSourceOrDestinationDirectory("source");
+            fileFolderDestination = setSourceOrDestinationDirectory("destination");
+            List<File> listOfFilesToTransfer = findFilesInSourceDirectory();
             boolean userConfirmedFileTransfer = confirmFileTransfer();
-            if(filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer){
+            if(filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer && fileFolderDestination != null){
                 transferFiles(listOfFilesToTransfer);
                 System.out.println("Files transferred successfully");
             }
@@ -38,20 +38,31 @@ public class FileMover {
         }
     }
 
-    private void transferFiles(List<String> listOfFilesToTransfer) throws IOException {
+    private void transferFiles(List<File> listOfFilesToTransfer) throws IOException {
         System.out.println("Transferring files to: " +  fileFolderDestination + "\n");
         for(int a = 0; a < listOfFilesToTransfer.size(); a++){
             if(listOfFilesToTransfer.size() > 0){
-                Path sourceFileFolderPath = Paths.get(fileFolderSource + listOfFilesToTransfer.get(a));
-                Path destinationFileFolderPath = Paths.get(fileFolderDestination + listOfFilesToTransfer.get(a));
+                Path sourceFileFolderPath = Paths.get(fileFolderSource + listOfFilesToTransfer.get(a).getName());
+                System.out.println(sourceFileFolderPath);
+                Path destinationFileFolderPath = Paths.get(fileFolderDestination + listOfFilesToTransfer.get(a).getName());
+                System.out.println(destinationFileFolderPath);
                 Files.move(sourceFileFolderPath, destinationFileFolderPath);
             }
         }
     }
 
-    private List<String> findFilesInSourceDirectory() {
+    private List<File> findFilesInSourceDirectory() {
         File sourceDirectoryToSearch = new File(fileFolderSource);
-        List<String> filesPresent = Arrays.asList(sourceDirectoryToSearch.list());
+        List<File> filesPresent = new ArrayList<>();
+        List<File> filesToProcess = Arrays.asList(sourceDirectoryToSearch.listFiles());
+        for(File file : filesToProcess){
+            if(file.isFile()){
+                filesPresent.add(file);
+            } else {
+                System.out.println("Not a file, must be searched");
+            }
+        }
+        System.out.println(sourceDirectoryToSearch.isDirectory());
         if(filesPresent.size() == 0){
             System.out.println(String.format("No files found in directory: %s, shutting down... \n", fileFolderSource));
         } else {
@@ -61,7 +72,7 @@ public class FileMover {
         return filesPresent;
     }
 
-    private boolean filesAreAvailableForTransfer(List<String> listOfFilesToTransfer){
+    private boolean filesAreAvailableForTransfer(List<File> listOfFilesToTransfer){
         boolean filesToTransfer;
         if(listOfFilesToTransfer.size() == 0){
             filesToTransfer = false;
@@ -88,7 +99,7 @@ public class FileMover {
         return userConfirmedFileTransfer;
     }
 
-    private void displayFilesFoundInDirectory(List<String> filesPresent){
+    private void displayFilesFoundInDirectory(List<File> filesPresent){
         System.out.println("View files (Y/N)?");
         String userDisplayFilesChoice = userInput.nextLine();
         if(userDisplayFilesChoice.equalsIgnoreCase("Y")){
@@ -100,13 +111,14 @@ public class FileMover {
         }
     }
 
-    public void testFileChoose(){
+    private String setSourceOrDestinationDirectory(String sourceOrDestinationFolder){
         File fileMoverCurrentDirectory = new File(System.getProperty("user.dir"));
         JFileChooser currentDirectoryChooser = new JFileChooser();
         currentDirectoryChooser.setCurrentDirectory(fileMoverCurrentDirectory);
-        currentDirectoryChooser.setDialogTitle("Please select a source directory");
+        currentDirectoryChooser.setDialogTitle(String.format("Please select the %s directory", sourceOrDestinationFolder));
         currentDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         currentDirectoryChooser.showSaveDialog(null);
-        File directoryChosen = currentDirectoryChooser.getSelectedFile();
+        return currentDirectoryChooser.getSelectedFile().getPath() + "\\";
     }
+
 }
