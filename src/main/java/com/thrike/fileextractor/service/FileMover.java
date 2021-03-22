@@ -7,10 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class FileMover {
 
@@ -18,14 +15,12 @@ public class FileMover {
     private String fileFolderDestination;
     private Scanner userInput = new Scanner(System.in);
 
-    public FileMover() {
-    }
-
     public void start() {
         try {
             fileFolderSource = setSourceOrDestinationDirectory("source");
             fileFolderDestination = setSourceOrDestinationDirectory("destination");
             List<File> listOfFilesToTransfer = findFilesInSourceDirectory();
+            System.out.println("filesPresentTotal: " + listOfFilesToTransfer);
             boolean userConfirmedFileTransfer = confirmFileTransfer();
             if(filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer && fileFolderDestination != null){
                 transferFiles(listOfFilesToTransfer);
@@ -42,10 +37,10 @@ public class FileMover {
         System.out.println("Transferring files to: " +  fileFolderDestination + "\n");
         for(int a = 0; a < listOfFilesToTransfer.size(); a++){
             if(listOfFilesToTransfer.size() > 0){
-                Path sourceFileFolderPath = Paths.get(fileFolderSource + listOfFilesToTransfer.get(a).getName());
-                System.out.println(sourceFileFolderPath);
+                Path sourceFileFolderPath = Paths.get(String.valueOf(listOfFilesToTransfer.get(a)));
+                System.out.println("Source: " + sourceFileFolderPath);
                 Path destinationFileFolderPath = Paths.get(fileFolderDestination + listOfFilesToTransfer.get(a).getName());
-                System.out.println(destinationFileFolderPath);
+                System.out.println("Destination: " + destinationFileFolderPath);
                 Files.move(sourceFileFolderPath, destinationFileFolderPath);
             }
         }
@@ -54,17 +49,22 @@ public class FileMover {
     private List<File> findFilesInSourceDirectory() {
         File sourceDirectoryToSearch = new File(fileFolderSource);
         List<File> filesPresent = new ArrayList<>();
+        List<File> directoriesPresent = new ArrayList<>();
         List<File> filesToProcess = Arrays.asList(sourceDirectoryToSearch.listFiles());
         for(File file : filesToProcess){
             if(file.isFile()){
                 filesPresent.add(file);
             } else {
-                System.out.println("Not a file, must be searched");
+                directoriesPresent.add(file);
             }
         }
-        System.out.println(sourceDirectoryToSearch.isDirectory());
+        List<File> subDirectoryFilesToAdd = findFilesInSubDirectory(directoriesPresent);
+        for(File file : subDirectoryFilesToAdd){
+            filesPresent.add(file);
+        }
         if(filesPresent.size() == 0){
             System.out.println(String.format("No files found in directory: %s, shutting down... \n", fileFolderSource));
+            System.exit(0);
         } else {
             System.out.println(String.format("Found %s files in %s:", filesPresent.size(), fileFolderSource));
             displayFilesFoundInDirectory(filesPresent);
@@ -72,14 +72,26 @@ public class FileMover {
         return filesPresent;
     }
 
-    private boolean filesAreAvailableForTransfer(List<File> listOfFilesToTransfer){
-        boolean filesToTransfer;
-        if(listOfFilesToTransfer.size() == 0){
-            filesToTransfer = false;
-        } else {
-            filesToTransfer = true;
+    private List<File> findFilesInSubDirectory(List<File> directoryToSearch){
+        List<File> filesFoundInDirectories = new ArrayList<>();
+        for(File directory : directoryToSearch){
+            List<File> subDirectoryFilesToMove = Arrays.asList(directory.listFiles());
+            for(File file : subDirectoryFilesToMove){
+                filesFoundInDirectories.add(file);
+            }
         }
-        return filesToTransfer;
+        System.out.println("Files from directories: " + filesFoundInDirectories.toString());
+        return filesFoundInDirectories;
+    }
+
+    private boolean filesAreAvailableForTransfer(List<File> listOfFilesToTransfer){
+        boolean thereAreFilesToTransfer;
+        if(listOfFilesToTransfer.size() == 0){
+            thereAreFilesToTransfer = false;
+        } else {
+            thereAreFilesToTransfer = true;
+        }
+        return thereAreFilesToTransfer;
     }
 
     private boolean confirmFileTransfer(){
@@ -120,5 +132,4 @@ public class FileMover {
         currentDirectoryChooser.showSaveDialog(null);
         return currentDirectoryChooser.getSelectedFile().getPath() + "\\";
     }
-
 }
