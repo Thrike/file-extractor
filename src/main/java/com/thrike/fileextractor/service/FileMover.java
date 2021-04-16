@@ -1,5 +1,7 @@
 package com.thrike.fileextractor.service;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
@@ -9,54 +11,51 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Slf4j
 public class FileMover {
 
     private String fileFolderSource;
     private String fileFolderDestination;
-    private Scanner userInput = new Scanner(System.in);
 
-    private FileFinder fileFinder = new FileFinder();
+    private final Scanner userInput = new Scanner(System.in);
+    private final FileFinder fileFinder = new FileFinder();
 
     public void start() {
         try {
             fileFolderSource = setSourceOrDestinationDirectory("source");
             fileFolderDestination = setSourceOrDestinationDirectory("destination");
-            List<File> listOfFilesToTransfer = fileFinder.findFilesInSourceDirectory(fileFolderSource);
+            List<File> listOfFilesToTransfer = fileFinder.findFiles(fileFolderSource);
             boolean userConfirmedFileTransfer = confirmFileTransfer();
             if (fileFinder.filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer && fileFolderDestination != null) {
                 transferFiles(listOfFilesToTransfer);
-                System.out.println("Files transferred successfully");
+                log.info("Files transferred successfully");
             }
         } catch (NoSuchFileException n) {
-            System.out.println("Unable to move file. Could not find file: " + n.getFile());
+            log.error("Unable to move file. Could not find file: " + n.getFile());
         } catch (IOException e) {
-            System.out.println(e);
+            log.error("IOException when starting the app: " + e);
         }
     }
 
     private void transferFiles(List<File> listOfFilesToTransfer) throws IOException {
-        System.out.println("Transferring files to: " + fileFolderDestination + "\n");
-        for (int a = 0; a < listOfFilesToTransfer.size(); a++) {
-            if (listOfFilesToTransfer.size() > 0) {
-                Path sourceFileFolderPath = Paths.get(String.valueOf(listOfFilesToTransfer.get(a)));
-                Path destinationFileFolderPath = Paths.get(fileFolderDestination + listOfFilesToTransfer.get(a).getName());
-                Files.move(sourceFileFolderPath, destinationFileFolderPath);
-            }
+        log.info("Transferring files to: " + fileFolderDestination + "\n");
+        for (File file : listOfFilesToTransfer) {
+            Path sourceFileFolderPath = Paths.get(String.valueOf(file));
+            Path destinationFileFolderPath = Paths.get(fileFolderDestination + file.getName());
+            Files.move(sourceFileFolderPath, destinationFileFolderPath);
         }
     }
 
     private boolean confirmFileTransfer() {
         boolean userConfirmedFileTransfer = false;
-        System.out.println(String.format("\nTransfer all above files with the following configuration? (Y/N) \n" +
-                "Source: " + "[" + fileFolderSource + "]" + "  -->  " + "Destination: " + "[" + fileFolderDestination + "]\n"));
+        log.info("Transfer all above files with the following configuration? (Y/N) Source: {}  -->  Destination: {}", fileFolderSource, fileFolderDestination);
         String userConfirmationChoice = userInput.nextLine();
         if (userConfirmationChoice.equalsIgnoreCase("Y")) {
             userConfirmedFileTransfer = true;
         } else if (userConfirmationChoice.equalsIgnoreCase("N")) {
-            userConfirmedFileTransfer = false;
-            System.out.println("Aborting file transfer...");
+            log.info("Aborting file transfer...");
         } else {
-            System.out.println("\nPlease enter 'Y' or 'N'");
+            log.info("\nPlease enter 'Y' or 'N'");
             start();
         }
         return userConfirmedFileTransfer;

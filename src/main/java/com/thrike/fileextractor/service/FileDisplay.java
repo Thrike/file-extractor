@@ -6,14 +6,14 @@ import java.util.Scanner;
 
 public class FileDisplay {
 
-    private Scanner userInput = new Scanner(System.in);
+    private final Scanner userInput = new Scanner(System.in);
 
     public void displayFilesFoundInDirectory(List<File> filesPresent) {
         System.out.println("View files (Y/N)?");
         String userDisplayFilesChoice = userInput.nextLine();
         if (userDisplayFilesChoice.equalsIgnoreCase("Y")) {
             System.out.println("=========================================");
-            filesPresent.stream().forEach(file -> System.out.println(file));
+            filesPresent.forEach(System.out::println);
             System.out.println("=========================================");
         }
     }
