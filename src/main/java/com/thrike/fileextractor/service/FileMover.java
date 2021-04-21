@@ -1,53 +1,71 @@
 package com.thrike.fileextractor.service;
 
+import com.thrike.fileextractor.view.JFileChooserCreator;
+import lombok.extern.slf4j.Slf4j;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.*;
 
+@Slf4j
 public class FileMover {
 
     private String fileFolderSource;
     private String fileFolderDestination;
-    private String test;
 
-    public FileMover(String fileFolderSource, String fileFolderDestination, String test) {
-        this.fileFolderSource = fileFolderSource;
-        this.fileFolderDestination = fileFolderDestination;
-        this.test = test;
-    }
+    private final Scanner userInput = new Scanner(System.in);
+    private final FileFinder fileFinder = new FileFinder();
+    private final JFileChooserCreator jFileChooserCreator = new JFileChooserCreator();
 
-    public void move() {
+    public void start() {
         try {
-            findFilesInSourceDirectory();
-            transferFiles();
+            fileFolderSource = setSourceOrDestinationDirectory("source");
+            fileFolderDestination = setSourceOrDestinationDirectory("destination");
+            List<Path> listOfFilesToTransfer = fileFinder.findFiles(fileFolderSource);
+            boolean userConfirmedFileTransfer = confirmFileTransfer();
+            if (fileFinder.filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer && fileFolderDestination != null) {
+                transferFiles(listOfFilesToTransfer);
+                log.info("Files transferred successfully");
+            }
+        } catch (NoSuchFileException n) {
+            log.error("Unable to move file. Could not find file: " + n.getFile());
         } catch (IOException e) {
-            System.out.println(e);
+            log.error("IOException when starting the app: " + e);
         }
     }
 
-    private void transferFiles() throws IOException {
-        Path sourceFileFolderPath = Paths.get(fileFolderSource);
-        Path destinationFileFolderPath = Paths.get(fileFolderDestination);
-        System.out.println("Transferring files from: " + sourceFileFolderPath.toString() + " to " +  destinationFileFolderPath.toString());
+    private void transferFiles(List<Path> listOfFilesToTransfer) throws IOException {
+        log.info("Transferring files to: " + fileFolderDestination + "\n");
+        for (Path path : listOfFilesToTransfer) {
+            Path sourceFileFolderPath = Paths.get(String.valueOf(path));
+            Path destinationFileFolderPath = Paths.get(fileFolderDestination + path.getFileName());
+            Files.move(sourceFileFolderPath, destinationFileFolderPath);
+        }
+    }
 
-        Path transferFiles = Files.move(sourceFileFolderPath, destinationFileFolderPath);
-        if (transferFiles != null) {
-            System.out.println("Files moved successfully!");
+    private boolean confirmFileTransfer() {
+        boolean userConfirmedFileTransfer = false;
+        System.out.printf(("Transfer all above files with the following configuration? (Y/N) \nSource: %s  -->  Destination: %s \n"), fileFolderSource, fileFolderDestination);
+        String userConfirmationChoice = userInput.nextLine();
+        if (userConfirmationChoice.equalsIgnoreCase("Y")) {
+            userConfirmedFileTransfer = true;
+        } else if (userConfirmationChoice.equalsIgnoreCase("N")) {
+            log.info("Aborting file transfer...");
         } else {
-            System.out.println("Error during file transfer");
+            log.info("\nPlease enter 'Y' or 'N'");
+            start();
         }
+        return userConfirmedFileTransfer;
     }
 
-    private void findFilesInSourceDirectory() {
-        File sourceDirectoryToSearch = new File(test);
-        String filesPresent[] = sourceDirectoryToSearch.list();
-        System.out.println(String.format("Found %s files:", filesPresent.length));
-        System.out.println("=========================================");
-        for (int i = 0; i < filesPresent.length; i++) {
-            System.out.println(filesPresent[i]);
-        }
-        System.out.println("=========================================");
+    private String setSourceOrDestinationDirectory(String sourceOrDestinationFolder) {
+        File fileMoverCurrentDirectory = new File(System.getProperty("user.dir"));
+        JFileChooser currentDirectoryChooser = jFileChooserCreator.createJFileChooser(fileMoverCurrentDirectory, sourceOrDestinationFolder);
+        return currentDirectoryChooser.getSelectedFile().getPath() + "\\";
     }
 }
