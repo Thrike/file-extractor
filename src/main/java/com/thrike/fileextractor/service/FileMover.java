@@ -1,5 +1,6 @@
 package com.thrike.fileextractor.service;
 
+import com.thrike.fileextractor.view.JFileChooserCreator;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -19,12 +20,13 @@ public class FileMover {
 
     private final Scanner userInput = new Scanner(System.in);
     private final FileFinder fileFinder = new FileFinder();
+    private final JFileChooserCreator jFileChooserCreator = new JFileChooserCreator();
 
     public void start() {
         try {
             fileFolderSource = setSourceOrDestinationDirectory("source");
             fileFolderDestination = setSourceOrDestinationDirectory("destination");
-            List<File> listOfFilesToTransfer = fileFinder.findFiles(fileFolderSource);
+            List<Path> listOfFilesToTransfer = fileFinder.findFiles(fileFolderSource);
             boolean userConfirmedFileTransfer = confirmFileTransfer();
             if (fileFinder.filesAreAvailableForTransfer(listOfFilesToTransfer) && userConfirmedFileTransfer && fileFolderDestination != null) {
                 transferFiles(listOfFilesToTransfer);
@@ -37,18 +39,18 @@ public class FileMover {
         }
     }
 
-    private void transferFiles(List<File> listOfFilesToTransfer) throws IOException {
+    private void transferFiles(List<Path> listOfFilesToTransfer) throws IOException {
         log.info("Transferring files to: " + fileFolderDestination + "\n");
-        for (File file : listOfFilesToTransfer) {
-            Path sourceFileFolderPath = Paths.get(String.valueOf(file));
-            Path destinationFileFolderPath = Paths.get(fileFolderDestination + file.getName());
+        for (Path path : listOfFilesToTransfer) {
+            Path sourceFileFolderPath = Paths.get(String.valueOf(path));
+            Path destinationFileFolderPath = Paths.get(fileFolderDestination + path.getFileName());
             Files.move(sourceFileFolderPath, destinationFileFolderPath);
         }
     }
 
     private boolean confirmFileTransfer() {
         boolean userConfirmedFileTransfer = false;
-        log.info("Transfer all above files with the following configuration? (Y/N) Source: {}  -->  Destination: {}", fileFolderSource, fileFolderDestination);
+        System.out.printf(("Transfer all above files with the following configuration? (Y/N) \nSource: %s  -->  Destination: %s \n"), fileFolderSource, fileFolderDestination);
         String userConfirmationChoice = userInput.nextLine();
         if (userConfirmationChoice.equalsIgnoreCase("Y")) {
             userConfirmedFileTransfer = true;
@@ -63,16 +65,7 @@ public class FileMover {
 
     private String setSourceOrDestinationDirectory(String sourceOrDestinationFolder) {
         File fileMoverCurrentDirectory = new File(System.getProperty("user.dir"));
-        JFileChooser currentDirectoryChooser = createJFileChooser(fileMoverCurrentDirectory, sourceOrDestinationFolder);
+        JFileChooser currentDirectoryChooser = jFileChooserCreator.createJFileChooser(fileMoverCurrentDirectory, sourceOrDestinationFolder);
         return currentDirectoryChooser.getSelectedFile().getPath() + "\\";
-    }
-
-    private JFileChooser createJFileChooser(File fileMoverCurrentDirectory, String sourceOrDestinationFolder) {
-        JFileChooser currentDirectoryChooser = new JFileChooser();
-        currentDirectoryChooser.setCurrentDirectory(fileMoverCurrentDirectory);
-        currentDirectoryChooser.setDialogTitle(String.format("Please select the %s directory", sourceOrDestinationFolder));
-        currentDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        currentDirectoryChooser.showSaveDialog(null);
-        return currentDirectoryChooser;
     }
 }
