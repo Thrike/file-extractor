@@ -50,7 +50,7 @@ public class FileMover {
 
     private boolean confirmFileTransfer() {
         boolean userConfirmedFileTransfer = false;
-        System.out.printf(("Transfer all above files with the following configuration? (Y/N) \nSource: %s  -->  Destination: %s \n"), fileFolderSource, fileFolderDestination);
+        System.out.printf(("Transfer all above files to the following location? \nDestination: %s \n"), fileFolderDestination);
         String userConfirmationChoice = userInput.nextLine();
         if (userConfirmationChoice.equalsIgnoreCase("Y")) {
             userConfirmedFileTransfer = true;

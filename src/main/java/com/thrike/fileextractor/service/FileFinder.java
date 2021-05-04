@@ -30,7 +30,7 @@ public class FileFinder {
         return filesList;
     }
 
-    public List<Path> collectFiles(File sourceDirectory) throws IOException {
+    private List<Path> collectFiles(File sourceDirectory) throws IOException {
         Path path = Paths.get(sourceDirectory.getAbsolutePath());
         List<Path> listOfFiles;
         try (Stream<Path> pathStream = Files.walk(path)) {
